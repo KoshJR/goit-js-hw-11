@@ -4,14 +4,16 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const apiKey = '40336421-a348c8518e766dd2004df0c10';
-const form = document.querySelector('.search-form');
-const gallery = document.querySelector('.gallery');
-const buttonLoad = document.querySelector('.load-more');
-const input = form.querySelector('input[name="searchQuery"]');
+const refs = {
+  form: document.querySelector('.search-form'),
+  gallery: document.querySelector('.gallery'),
+  buttonLoad: document.querySelector('.load-more'),
+  input: form.querySelector('input[name="searchQuery"]'),
+};
 let pages = 1;
 const per_page = 40;
 
-function errorMesage() {
+function errorMessage() {
   Notify.failure(
     'Sorry, there are no images matching your search query. Please try again.',
     {
@@ -36,45 +38,45 @@ function successMessage(response) {
   });
 }
 
-function showButton() {
+function showBtn() {
   buttonLoad.style.display = 'block';
 }
-function hideButton() {
+function hideBtn() {
   buttonLoad.style.display = 'none';
 }
 
-form.addEventListener('submit', fetchPosts);
-async function fetchPosts(event) {
-  event.preventDefault();
-  hideButton();
-  gallery.innerHTML = '';
+refs.form.addEventListener('submit', fetchPictures);
+async function fetchPictures(e) {
+  e.preventDefault();
+  hideBtn();
+  refs.gallery.innerHTML = '';
   pages = 1;
   try {
-    const response = await axios.get(
-      `https://pixabay.com/api/?key=${apiKey}&q=${input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
+    const res = await axios.get(
+      `https://pixabay.com/api/?key=${apiKey}&q=${refs.input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
     );
-    if (!response.data.totalHits || !input.value) {
-      errorMesage();
+    if (!res.data.totalHits || !refs.input.value) {
+      errorMessage();
       return;
     }
-    successMessage(response);
-    renderImage(response);
-    showButton();
-    updateStatusLoadButton(response);
+    successMessage(res);
+    renderImage(res);
+    showBtn();
+    updateLoadBtnStatus(res);
   } catch (error) {
     console.error(error);
-    errorMesage();
+    errorMessage();
   }
 }
 
-buttonLoad.addEventListener('click', async () => {
+refs.buttonLoad.addEventListener('click', async () => {
   try {
     pages += 1;
     const click = await loadMore();
 
     renderImage(click);
-    showButton();
-    updateStatusLoadButton(click);
+    showBtn();
+    updateLoadBtnStatus(click);
     scrollPage();
   } catch (error) {
     console.log(error);
@@ -82,20 +84,18 @@ buttonLoad.addEventListener('click', async () => {
   }
 });
 async function loadMore() {
-  hideButton();
-  const response = await axios.get(
-    `https://pixabay.com/api/?key=${apiKey}&q=${input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
+  hideBtn();
+  const res = await axios.get(
+    `https://pixabay.com/api/?key=${apiKey}&q=${refs.input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
   );
-  return response;
+  return res;
 }
 
-function updateStatusLoadButton(params) {
+function updateLoadBtnStatus(params) {
   const pagesTotal = Math.ceil(params.data.totalHits / per_page);
-  // console.log(pagesTotal);
   if (pages >= pagesTotal || params.data.totalHits <= per_page) {
     infoMessage();
-    hideButton();
-    // return;
+    hideBtn();
   }
 }
 
@@ -124,15 +124,13 @@ function renderImage(dataGet) {
     )
     .join('');
 
-  gallery.insertAdjacentHTML('beforeend', markup);
-  // startSimpleLightbox();
+  refs.gallery.insertAdjacentHTML('beforeend', markup);
   let lightbox = new SimpleLightbox('.gallery__link', {
     captionsData: 'alt',
     captionDelay: 250,
   });
   lightbox.refresh();
 }
-// function startSimpleLightbox() {}
 
 function scrollPage() {
   const { height: cardHeight } = document
@@ -144,20 +142,3 @@ function scrollPage() {
     behavior: 'smooth',
   });
 }
-
-const scrollUpBtn = document.getElementById('scrollUp');
-const scrollDownBtn = document.getElementById('scrollDown');
-
-scrollUpBtn.addEventListener('click', () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  });
-});
-
-scrollDownBtn.addEventListener('click', () => {
-  window.scrollTo({
-    top: document.body.scrollHeight,
-    behavior: 'smooth',
-  });
-});
