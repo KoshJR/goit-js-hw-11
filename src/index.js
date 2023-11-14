@@ -8,7 +8,7 @@ const refs = {
   form: document.querySelector('.search-form'),
   gallery: document.querySelector('.gallery'),
   buttonLoad: document.querySelector('.load-more'),
-  input: form.querySelector('input[name="searchQuery"]'),
+  input: refs.form.querySelector('input[name="searchQuery"]'),
 };
 let pages = 1;
 const per_page = 40;
