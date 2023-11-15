@@ -4,14 +4,28 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const apiKey = '40336421-a348c8518e766dd2004df0c10';
-const refs = {
-  form: document.querySelector('.search-form'),
-  gallery: document.querySelector('.gallery'),
-  buttonLoad: document.querySelector('.load-more'),
-  input: refs.form.querySelector('input[name="searchQuery"]'),
-};
+const form = document.querySelector('.search-form');
+const gallery = document.querySelector('.gallery');
+const buttonLoad = document.querySelector('.load-more');
+const input = form.querySelector('input[name="searchQuery"]');
 let pages = 1;
 const per_page = 40;
+
+function infoMessage() {
+  Notify.info("We're sorry, but you've reached the end of search results.", {
+    timeout: 3000,
+    width: '400px',
+    fontSize: '24px',
+  });
+}
+
+function successMessage(response) {
+  Notify.success(`Hooray! We found ${response.data.totalHits} images.`, {
+    timeout: 3000,
+    width: '400px',
+    fontSize: '24px',
+  });
+}
 
 function errorMessage() {
   Notify.failure(
@@ -23,20 +37,6 @@ function errorMessage() {
     }
   );
 }
-function infoMessage() {
-  Notify.info("We're sorry, but you've reached the end of search results.", {
-    timeout: 3000,
-    width: '400px',
-    fontSize: '24px',
-  });
-}
-function successMessage(response) {
-  Notify.success(`Hooray! We found ${response.data.totalHits} images.`, {
-    timeout: 3000,
-    width: '400px',
-    fontSize: '24px',
-  });
-}
 
 function showBtn() {
   buttonLoad.style.display = 'block';
@@ -45,17 +45,17 @@ function hideBtn() {
   buttonLoad.style.display = 'none';
 }
 
-refs.form.addEventListener('submit', fetchPictures);
+form.addEventListener('submit', fetchPictures);
 async function fetchPictures(e) {
   e.preventDefault();
   hideBtn();
-  refs.gallery.innerHTML = '';
+  gallery.innerHTML = '';
   pages = 1;
   try {
     const res = await axios.get(
-      `https://pixabay.com/api/?key=${apiKey}&q=${refs.input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
+      `https://pixabay.com/api/?key=${apiKey}&q=${input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
     );
-    if (!res.data.totalHits || !refs.input.value) {
+    if (!res.data.totalHits || !input.value) {
       errorMessage();
       return;
     }
@@ -69,7 +69,7 @@ async function fetchPictures(e) {
   }
 }
 
-refs.buttonLoad.addEventListener('click', async () => {
+buttonLoad.addEventListener('click', async () => {
   try {
     pages += 1;
     const click = await loadMore();
@@ -86,7 +86,7 @@ refs.buttonLoad.addEventListener('click', async () => {
 async function loadMore() {
   hideBtn();
   const res = await axios.get(
-    `https://pixabay.com/api/?key=${apiKey}&q=${refs.input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
+    `https://pixabay.com/api/?key=${apiKey}&q=${input.value}&image_type=photo&orientation=horizontal&safesearch=true&per_page=${per_page}&page=${pages}`
   );
   return res;
 }
@@ -124,7 +124,7 @@ function renderImage(dataGet) {
     )
     .join('');
 
-  refs.gallery.insertAdjacentHTML('beforeend', markup);
+  gallery.insertAdjacentHTML('beforeend', markup);
   let lightbox = new SimpleLightbox('.gallery__link', {
     captionsData: 'alt',
     captionDelay: 250,
